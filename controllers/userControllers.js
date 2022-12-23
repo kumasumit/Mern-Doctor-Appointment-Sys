@@ -1,5 +1,6 @@
 const User = require('../models/User')
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 //register Callback
 const registerController = async(req, res) => {
@@ -20,17 +21,27 @@ const registerController = async(req, res) => {
         
     } catch (error) {
         console.log(error);
-        res.status(500).send({success: false, message: `Register Callback Error: ${error.message}`})
+        res.status(500).send({success: false, message: `Error in Register Controller: ${error.message}`})
         
     }
 };
 //login Callback
 const loginController = async(req, res) => {
     try {
-        
+        const user = await User.findOne({email: req.body.email});
+        if(!user){
+           return res.status(200).send({success:false, message:'User not found'})    
+        }
+        const isMatch = await bcrypt.compare(req.body.password, user.password);
+        if(!isMatch){
+            return res.status(200).send({success:false, message:"Invalid Credentials"})
+        }
+        const token = jwt.sign({id: user._id}, process.env.JWT_SECRET, {expiresIn: '1d'})
+        res.status(200).send({success:true, message: 'Login successful', token: token})
+
     } catch (error) {
         console.log(error);
-        res.status(500).send({success: false, message: `Login Callback Error: ${error.message}`})    
+        res.status(500).send({success: false, message: `Error in Login Controller: ${error.message}`})    
     }
 };
 

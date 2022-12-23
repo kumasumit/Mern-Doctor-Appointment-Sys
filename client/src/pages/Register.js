@@ -1,17 +1,33 @@
 import React from 'react'
 import "../styles/RegisterStyles.css"
-import {Form, Input } from 'antd';
-import {Link} from 'react-router-dom';
+import {Form, Input , message} from 'antd';
+import {Link, useNavigate} from 'react-router-dom';
+import axios from 'axios'; 
 const Register = () => {
+  const navigate = useNavigate();
    const [form] = Form.useForm();
   
-   const onFinish = (values) => {
-    console.log('Success:', values, form);
-    form.resetFields();
+   const onFinish = async(values) => {
+    try {
+      const res = await axios.post('/api/v1/user/register', values);
+      if(res.data.success) {
+        message.success('Registered successfully'); //this message is coming from antd
+        form.resetFields();
+        navigate('/login');
+      }else{
+        message.error(res.data.message); //this message is coming from antd
+        form.resetFields();
+      }
+      
+    } catch (error) {
+      console.log(error);
+      message.error(`Error registering User: ${error}`)
+      form.resetFields();
+    }
+    // console.log('Success:', values, form);
+  
   };
-  const onFinishFailed = (errorInfo) => {
-    console.log('Failed:', errorInfo);
-  };
+  
   return (
     <>
     <div className='form-container'>
@@ -20,7 +36,7 @@ const Register = () => {
       layout="vertical"
       onFinish={onFinish}
       form={form}
-      onFinishFailed={onFinishFailed}
+     
       autoComplete="off"
       className="register-form"
       
@@ -29,7 +45,7 @@ const Register = () => {
       {/* 1. A form item for name/username */}
       <Form.Item
         label="Username"
-        name="username"
+        name="name"
         rules={[
           {
             required: true,
