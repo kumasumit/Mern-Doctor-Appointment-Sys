@@ -44,9 +44,35 @@ const loginController = async(req, res) => {
         res.status(500).send({success: false, message: `Error in Login Controller: ${error.message}`})    
     }
 };
+//getUserController
+const getUserController = async(req, res) => {
+    try {
+    const user = await User.findOne({ _id: req.body.userId });
+    //if the user is not found
+    if(!user){
+        return res.status(200).send({
+            success: false,
+            message:'User not found'
+        })
+    }
+    //if user exists, send the user back with only the name and password and not the password
+    res.status(200).send({success: true, message:"User found", data:{
+        name: user.name,
+        email: user.email,
+    }})
+} catch (error) {
+    console.log(error);
+    res.status(500).send({
+      success: false,
+      message: "error in getUserController",
+      error,
+    });
+        
+    }
 
+};
 
 
 module.exports = {
-    loginController, registerController
+    loginController, registerController, getUserController
 }
